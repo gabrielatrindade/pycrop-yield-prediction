@@ -1,9 +1,10 @@
-name: crop_yield_prediction
+name: pycrop_yield_prediction
 channels:
   - pytorch
   - conda-forge
   - defaults
 dependencies:
+  - python=3.7
   - pandas
   - numpy
   - gdal
