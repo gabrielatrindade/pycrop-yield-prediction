@@ -110,7 +110,7 @@ class MODISExporter:
 
         imgcoll = ee.ImageCollection(self.collection_id) \
             .filterBounds(ee.Geometry.Rectangle(-106.5, 50, -64, 23)) \
-            .filterDate('2002-12-31', '2016-8-4')
+            .filterDate('2002-12-31', '2003-5-31')
 
         datatype_to_func = {
             'image': _append_im_band,
@@ -193,13 +193,14 @@ class MODISExporter:
                                collection_id='MODIS/MOD09A1')
 
         # # pull_MODIS_entire_county_clip.py
-        self.export(folder_name='crop_yield-data_image', data_type='image',
-                    min_img_val=16000, max_img_val=100,
-                    export_limit=export_limit, major_states_only=major_states_only,
-                    check_if_done=check_if_done, download_folder=download_folder[0])
+        # self.export(folder_name='crop_yield-data_image', data_type='image',
+        #             min_img_val=16000, max_img_val=100,
+        #             export_limit=export_limit, major_states_only=major_states_only,
+        #             check_if_done=check_if_done, download_folder=download_folder[0])
 
         # pull_MODIS_landcover_entire_county_clip.py
-        self.update_parameters(collection_id='MODIS/051/MCD12Q1')
+        # Collection MODIS/051/MCD12Q1 is unavailable. Please use MODIS/006/MCD12Q1 instead
+        self.update_parameters(collection_id='MODIS/006/MCD12Q1')
         self.export(folder_name='crop_yield-data_mask', data_type='mask',
                     export_limit=export_limit, major_states_only=major_states_only,
                     check_if_done=check_if_done, download_folder=download_folder[1])
