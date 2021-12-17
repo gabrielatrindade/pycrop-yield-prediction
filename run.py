@@ -47,7 +47,7 @@ class RunTask:
                 temperature_path='data/crop_yield-data_temperature',
                 image_path='data/crop_yield-data_image', yield_data_path='data/yield_data.csv',
                 cleaned_data_path='data/img_output', multiprocessing=True, processes=4, parallelism=6,
-                delete_when_done=False, num_years=14):
+                delete_when_done=False, num_years=1):
         """
         Preprocess the data
 
