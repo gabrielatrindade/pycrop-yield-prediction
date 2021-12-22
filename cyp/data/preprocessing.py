@@ -69,7 +69,7 @@ class DataCleaner:
         if delete_when_done:
             print("Warning! delete_when_done=True will delete the .tif files")
         if not self.multiprocessing:
-            for filename in self.tif_files:
+            for filename in self.tif_files[:37]:         # running for 36 files
                 process_county(filename, self.savedir, self.image_path, self.mask_path, self.temperature_path,
                                self.yield_data, num_years=num_years, delete_when_done=delete_when_done)
         else:
@@ -105,26 +105,29 @@ def process_county(filename, savedir, image_path, mask_path, temperature_path, y
 
     image = np.transpose(np.array(gdal.Open(str(image_path / filename)).ReadAsArray(), dtype='uint16'),
                          axes=(1, 2, 0))
+    # print(image.shape)
 
     temp = np.transpose(np.array(gdal.Open(str(temperature_path / filename)).ReadAsArray(), dtype='uint16'),
                         axes=(1, 2, 0))
+    # print(temp.shape)
 
-    mask = np.transpose(np.array(gdal.Open(str(mask_path / filename)).ReadAsArray(), dtype='uint16'),
+    # adding 3td dimension to np.array with brackets
+    mask = np.transpose([np.array(gdal.Open(str(mask_path / filename)).ReadAsArray(), dtype='uint16')],
                         axes=(1, 2, 0))
+    # print(mask.shape)
+
     # a value of 12 indicates farmland; everything else, we want to ignore
     mask[mask != 12] = 0
     mask[mask == 12] = 1
 
     # when exporting the image, we appended bands from many years into a single image for efficiency. We want
     # to split it back up now
-
     # num bands and composite period from the MODIS website
     img_list = divide_into_years(image, bands=7, composite_period=8, num_years=num_years)
-    mask_list = divide_into_years(mask, bands=1, composite_period=365, num_years=num_years, extend=True)
+    mask_list = divide_into_years(mask, bands=1, composite_period=151, num_years=num_years, extend=True)  # 365
     temp_list = divide_into_years(temp, bands=2, composite_period=8, num_years=num_years)
 
     img_temp_merge = merge_image_lists(img_list, 7, temp_list, 2)
-
     masked_img_temp = mask_image(img_temp_merge, mask_list)
 
     start_year = 2003  # start year from the MODIS website
@@ -163,7 +166,8 @@ def divide_into_years(img, bands, composite_period, num_years=14, extend=False):
     im_list: a list of appended image collections, where each element in the list is a year's worth
         of data
     """
-    bands_per_year = bands * math.ceil(365 / composite_period)
+
+    bands_per_year = bands * math.ceil(151 / composite_period) #(365 / composite_period) changing it because I don't have 365 days
 
     # if necessary, pad the image collection with the final image
     if extend:
@@ -173,7 +177,7 @@ def divide_into_years(img, bands, composite_period, num_years=14, extend=False):
 
     image_list = []
     cur_idx = 0
-    for i in range(0, num_years - 1):
+    for i in range(0, 1): # num_years - 1):
         image_list.append(img[:, :, cur_idx:cur_idx + bands_per_year])
         cur_idx += bands_per_year
     image_list.append(img[:, :, cur_idx:])
@@ -206,12 +210,15 @@ def merge_image_lists(im_list_1, num_bands_1, im_list_2, num_bands_2):
     assert len(im_list_1) == len(im_list_2), "Image lists are not the same length!"
 
     for im1, im2 in zip(im_list_1, im_list_2):
-        individual_images = []
+        # individual_images = []
 
+        # since I have just some months I don't need to split by year
         # split the 'year' appended images into individual images
-        for image_1, image_2 in zip(np.split(im1, im1.shape[-1] / num_bands_1, axis=-1),
-                                    np.split(im2, im2.shape[-1] / num_bands_2, axis=-1)):
-            individual_images.append(np.concatenate((image_1, image_2), axis=-1))
+        # for image_1, image_2 in zip(np.split(im1, im1.shape[-1] / num_bands_1, axis=-1),
+        #                             np.split(im2, im2.shape[-1] / num_bands_2, axis=-1)):
+        #     individual_images.append(np.concatenate((image_1, image_2), axis=-1))
+        # merged_list.append(np.concatenate(individual_images, axis=-1))
+        individual_images = np.concatenate((im1, im2), axis=-1)
         merged_list.append(np.concatenate(individual_images, axis=-1))
     return merged_list
 
@@ -222,7 +229,7 @@ def mask_image(im_list, mask_list):
     assert len(im_list) == len(mask_list), "Mask and Image lists are not the same length!"
 
     for img, mask in zip(im_list, mask_list):
-        expanded_mask = np.tile(mask, (1, 1, img.shape[2]))
+        expanded_mask = np.tile(mask, (1, 1, img.shape[1]))  # shape[2]
         masked_img = img * expanded_mask
         masked_im_list.append(masked_img)
 
