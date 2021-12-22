@@ -42,11 +42,11 @@ class RunTask:
         exporter.export_all(export_limit, major_states_only, check_if_done,
                             download_folder)
 
-    @staticmethod
+    @staticmethod #before multiprocessing=True
     def process(mask_path='data/crop_yield-data_mask',
                 temperature_path='data/crop_yield-data_temperature',
                 image_path='data/crop_yield-data_image', yield_data_path='data/yield_data.csv',
-                cleaned_data_path='data/img_output', multiprocessing=True, processes=4, parallelism=6,
+                cleaned_data_path='data/img_output', multiprocessing=False, processes=4, parallelism=6,
                 delete_when_done=False, num_years=1):
         """
         Preprocess the data
@@ -117,7 +117,7 @@ class RunTask:
 
     @staticmethod
     def train_cnn(cleaned_data_path=Path('data/img_output'), dropout=0.5, dense_features=None,
-                  savedir=Path('data/models'), times='all', pred_years=None, num_runs=2, train_steps=25000,
+                  savedir=Path('data/models'), times='all', pred_years=2004, num_runs=2, train_steps=25000,
                   batch_size=32, starter_learning_rate=1e-3, weight_decay=1, l1_weight=0,
                   patience=10, use_gp=True, sigma=1, r_loc=0.5, r_year=1.5, sigma_e=0.32, sigma_b=0.01,
                   device=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')):
