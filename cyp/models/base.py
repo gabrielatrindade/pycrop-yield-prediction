@@ -156,6 +156,8 @@ class ModelBase:
 
         results = self._predict(*train_data, *test_data, batch_size)
 
+        print(results)
+
         model_information = {
             'state_dict': self.model.state_dict(),
             'val_loss': val_scores['loss'],
@@ -199,9 +201,10 @@ class ModelBase:
 
         # split the training dataset into a training and validation set
         total_size = train_images.shape[0]
+
         # "Learning rates and stopping criteria are tuned on a held-out
         # validation set (10%)."
-        val_size = total_size // 10
+        val_size = total_size // 2  ## changing validation set
         train_size = total_size - val_size
         print(f'After split, training on {train_size} examples, '
               f'validating on {val_size} examples')
@@ -366,6 +369,10 @@ class ModelBase:
         """
         train_idx = np.nonzero(years < predict_year)[0]
         test_idx = np.nonzero(years == predict_year)[0]
+
+        print(years)
+        print(train_idx)
+        print(predict_year)
 
         train_images, test_images = self._normalize(images[train_idx], images[test_idx])
 
